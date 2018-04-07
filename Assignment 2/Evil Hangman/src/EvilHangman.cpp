@@ -63,14 +63,50 @@ int main() {
 
 
    for(int i=0; i<turns; i++){]
-       char guess;
-       while (! stringContains(charToString(toLowerCase(guess)), alphabet)){
-           cout << "Enter a letter to guess. If you're seeing this again, it means you already guessed that letter!";
+       string guess = "";
+       cout << "Enter a guess.";
+       cin >>  guess;
+       while (! stringContains(toLowerCase(guess), alphabet)){
+           if (guess.length() > 1){
+               cout << "Enter only a letter.";
+           }
+           else{
+               cout << "You already guessed that letter!";
+           }
            cin >>  guess;
        }
        guess = toLowerCase(guess);
-       //create word families
+       Lexicon withLex;
+       Lexicon withoutLex;
+       
+       int withOutCount = 0;
+       int withCount = 0;
+       for(string word : masterWordList){
+           if (stringContains(toLowerCase(guess), word)) {
+                 withCount += 1;
+                 withLex.add(word);
+            }
+           else{
+               withoutCount +=1;
+           }
+       }
+       if(withOutCount >= withCount) {
+           cout >>"Incorrect guess";
+           masterWordList = withLex;
+           continue;
+       }
+       else {
+           cout >> "Correct guess";
+           masterWordList = withoutLex;
+           withLex = nil;
+           
+       }
+       
+       
+       
    }
+   
+  
 
          //prompt user for letter
          //calculate largest pattern group of remaining words
