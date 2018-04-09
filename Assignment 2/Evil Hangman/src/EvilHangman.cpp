@@ -13,125 +13,240 @@
 #include "vector.h"
 #include "lexicon.h"
 #include "strlib.h"
+#include "hashmap.h"
+#include "random.h"
 
 using namespace std;
 
-int main() {
-
-    //set up the dictionary
-    Lexicon english("EnglishWords.dat");
-
+struct Game
+{
+public:
+    bool wonGame = false;
+    bool ranOutOfTurns = false;
+    Lexicon dictionary;
     int testSpaces;
     int spaces = 0;
-    //ask the user to input an integer (number of spaces)
-    //check that there is a word of that length in the dictionary
-    while (spaces == 0){
-        cout << "Please input an integer for how long the word should be" << endl;
-        cin >> testSpaces;
-        for(string word : english){
-            if (word.length() == testSpaces){
-                spaces = testSpaces;
-                break;
+    int turns;
+    char guess;
+    string guessAsString;
+    bool knowTrick;
+    Vector<int> addLetters;
+    Vector<char> currentWordPattern;
+    Lexicon masterWordList;
+    string alphabet = "abcdefghijklmnopqrstuvwxyz";
+    
+    Game() {}
+    
+   
+    void askForLength(){
+        while (spaces == 0){
+            cout << "Please input an integer for how long the word should be" << endl;
+            cin >> testSpaces;
+            for(string word : dictionary){
+                if (word.length() == testSpaces){
+                    spaces = testSpaces;
+                    addLetters = Vector<int>(spaces, 0);
+                    break;
+                }
             }
-            else{
-                cout << "No english words of this length found." << endl;
+
+        }
+    }
+    void askForTurns(){
+        cout << "How many turns would you like?" << endl;
+        cin >> turns;
+    }
+    void askForTrick(){
+        char answer;
+        cout << "Would you like to know how many words are left at any given time? y for yes, n for no." << endl;
+        cin >> answer;
+        if (answer == 'y'){
+            knowTrick = true;
+        }
+        else{
+            knowTrick = false;
+        }
+    }
+    void assembleMasterWordList(){
+        for(string word : dictionary){
+            if (word.length() == spaces) {
+                masterWordList.add(word);
             }
         }
     }
-
-   //ask user to input a number of turns (integer)
-    int turns;
-    cout << "How many turns would you like?" << endl;
-    cin >> turns;
-
-    //ask if they would like to know number of remaining words
-   string knowTrick;
-   cout << "Would you like to know how many words are left at any given time? Y for yes, N for no." << endl;
-   cin >> knowTrick;
-   knowTrick = toLowerCase(knowTrick);
-
-
-   //construct list of potential words
-    Lexicon masterWordList;
-    for(string word : masterWordList){
-        if (word.length() == spaces) {
+    
+    int calculateBiggestGroup(){
+        Lexicon withLex;
+        Lexicon withoutLex;
+        int withoutCount = 0;
+        int withCount = 0;
+        for(string word : masterWordList){
+            if (stringContains(word, guessAsString)) {
+                  withCount += 1;
+                  withLex.add(word);
+             }
+            else{
+                withoutCount +=1;
+                withoutLex.add(word);
+            }
+        }
+        if(withoutCount >= withCount) {
+            cout << "Incorrect guess" << endl;
+            masterWordList = withoutLex;
+            return 1;
+        }
+        else {
+            masterWordList = withLex;
+            return 0;
+        }
+    }
+    void createWordFamilies(){
+        
+        HashMap<Vector<int>,Vector<string>> families;
+        //find all the words with guess in it
+        //for each word, create a list of the spots where it has the letter
+        //check the map to see if that list exists, and add the word to the list
+        //if it doesn't exist, create a new entry for that family and a list with that word
+        
+        for (string word : masterWordList ){
+            if (stringContains(word,guessAsString)){
+                Vector<int> whereLetter;
+                for (int c=0; c < word.length(); c++){
+                    if (word[c] == guess){
+                        whereLetter.add(c);
+                    }
+                }
+                if(families.containsKey(whereLetter)){
+                    families[whereLetter].add(word);
+                }
+                else{
+                    Vector<string> newList;
+                    newList.add(word);
+                    families.add(whereLetter, newList);
+                    
+                }
+            }
+        }
+        cout << families.keys() << endl;
+        Vector<int> maxKey;
+        int maxSize=0;
+        //find the longest list
+        for(Vector<int> family : families){
+            if(families[family].size() > maxSize){
+                maxSize = families[family].size();
+                maxKey = family;
+            }
+        }
+        masterWordList.clear();
+        addLetters = maxKey;
+        for (string word : families[maxKey]){
             masterWordList.add(word);
         }
     }
+    
+    void chooseAndDisplayResult(){
+        for(int num : addLetters){
+            currentWordPattern[num] = guess;
+        }
 
-    string alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-
-   for(int i=0; i<turns; i++){]
-       string guess = "";
-       cout << "Enter a guess.";
-       cin >>  guess;
-       while (! stringContains(toLowerCase(guess), alphabet)){
-           if (guess.length() > 1){
-               cout << "Enter only a letter.";
-           }
-           else{
-               cout << "You already guessed that letter!";
-           }
-           cin >>  guess;
-       }
-       guess = toLowerCase(guess);
-       Lexicon withLex;
-       Lexicon withoutLex;
-       
-       int withOutCount = 0;
-       int withCount = 0;
-       for(string word : masterWordList){
-           if (stringContains(toLowerCase(guess), word)) {
-                 withCount += 1;
-                 withLex.add(word);
+    }
+    
+    int runGame(){
+        dictionary = Lexicon("EnglishWords.dat");
+        askForLength();
+        askForTurns();
+        askForTrick();
+        assembleMasterWordList();
+        currentWordPattern = Vector<char>(spaces,'-');
+        
+        for(int i=0; i<turns; i++){
+            if(knowTrick){
+                cout << "Words Left: " << masterWordList.size() << endl;
             }
-           else{
-               withoutCount +=1;
-           }
-       }
-       if(withOutCount >= withCount) {
-           cout >>"Incorrect guess";
-           masterWordList = withLex;
-           continue;
-       }
-       else {
-           cout >> "Correct guess";
-           masterWordList = withoutLex;
-           withLex = nil;
-           
-       }
-       
-       
-       
-   }
-   
-  
+            cout << "Turns left: " << i;
+            cout << "Letters left: " << alphabet << endl;
+            
+            for(int i=0; i<currentWordPattern.size(); i++) {
+                if(currentWordPattern[i] == '-'){
+                    cout << "  ___  ";
+                }
+                else{
+                    cout << currentWordPattern[i];
+                }
+            }
+            
+            cout << '\n';
+            
+            if(i == turns-1){
+                cout << "last turn!";
+            }
+            //exhausted the alphabet
+            if(alphabet.length() == 0){
+                cout << "no more letters :( ";
+                return 0;
+            }
+            
+            guess = '-';
 
-         //prompt user for letter
-         //calculate largest pattern group of remaining words
-         //tell user if correct or incorrect
-         //fill in the spaces with that letter
-         //remove the word from the remaining words
-         //if length of remaining words == 1, end the game, tell them they lose, present the other word
-         //print number of remaining words
+            cout << "Enter a guess." << endl;
+            cin >>  guess;
+            guess = tolower(guess);
+            guessAsString = charToString(guess);
+            
+            while (! stringContains(alphabet, guessAsString)){
+                cout << "You already guessed that letter!"<< endl;
+                cin >>  guess;
+                guess = tolower(guess);
+                guessAsString = charToString(guess);
+            }
+            
+            
+            alphabet = stringReplace(alphabet,guessAsString,"");
+            
+            //ending the game
+                 if(calculateBiggestGroup() == 0){
+                     createWordFamilies();
+                     chooseAndDisplayResult();
+                     if(masterWordList.size() <= 2){
+                         for(char letter : currentWordPattern){
+                             if (letter == '-'){
+                                 letter = guess;
+                             }
+                         }
+                         string finalGuess = "";
+                         for(char c : currentWordPattern){
+                             finalGuess.push_back(c);
+                         }
+                         if (masterWordList.contains(finalGuess)){
+                             cout << "You win!" << endl;
+                             return 1;
+                         }
 
+                    }
+                }
+            }
+        //ran out of turns
+        cout << "no more letters :(";
+        return 0;
+     }
+};
 
-
-
-
-
-
-
-
-
-
-
-    // [TODO: Fill this in!]
-    // [TODO: Don't forget to call the recordTurnInfo function
-    //        at the start of each turn and the recordGameEnd
-    //        function at the end of the game! It's necessary
-    //        for our autograders to function.]
+int main() {
+    char playAgain;
+    Game myNewGame = Game();
+    int play = myNewGame.runGame();
+    if (play == 0){
+        cout << "You lost!!";
+    }
+    else if(play == 1){
+        cout << "You won!!!!! Way to go!!!!";
+    }
+    cout << "Play again? y or n" << endl;  
+    cin >> playAgain;
+    if(playAgain == 'y'){
+        myNewGame = Game();
+    }
+    
     return 0;
 }
 
