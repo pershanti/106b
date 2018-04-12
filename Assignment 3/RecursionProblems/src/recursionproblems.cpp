@@ -43,7 +43,25 @@ double weightOnKnees(int row, int col, const Vector<Vector<double> >& weights) {
 
 
 void drawSierpinskiTriangle(GWindow& gw, double x, double y, int size, int order) {
-    // TODO: write this function
-
+   
+    if (order < 0 || size < 0){
+       throw "Invald parameters";
+        return;
+    }
+    //base case
+    if (order == 1){
+        gw.drawLine(x, y, x+size, y);
+        gw.drawLine(x+size, y, x + 0.5 * size, y + 0.866 * size);
+        gw.drawLine(x + 0.5 * size, y + 0.866 * size, x, y);
+        return;
+    }
+    else if (order > 1){
+        drawSierpinskiTriangle(gw, x, y, 0.5*size, order-1);
+        drawSierpinskiTriangle(gw, x + 0.5*size, y, 0.5*size, order-1);
+        drawSierpinskiTriangle(gw, x +0.25*size, y + 0.433*size, 0.5*size, order-1 );
+        return;
+    }
+    
 }
+
 
