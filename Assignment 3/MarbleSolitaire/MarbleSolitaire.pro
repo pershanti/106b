@@ -294,3 +294,19 @@ exists($$PWD/lib/autograder/*.cpp) {
         copyToDestdir($$files($$PWD/*.h))
     }
 }
+
+DISTFILES += \
+    res/images/Thumbs.db \
+    res/images/picture-of-kitten.jpg \
+    res/images/woodBoard.jpg \
+    res/images/m1.png \
+    res/images/m2.png \
+    res/images/m3.png \
+    res/images/m4.png \
+    res/images/m5.png \
+    res/boards/7-Step.txt \
+    res/boards/Backtracking.txt \
+    res/boards/Full-Board.txt \
+    res/boards/Half-Done.txt \
+    res/boards/IllegalMoves.txt \
+    res/boards/IllegalMoves2.txt

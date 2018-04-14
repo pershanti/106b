@@ -35,13 +35,62 @@ Vector<Move> findPossibleMoves(const Grid<MarbleType>& board);
  *          starting board. If you return true, MoveHistory should contain the
  *          sequence of moves that arrives at the solution.
  */
+
+//helper function to check if the board is empty
+
+int numOccupied(Grid<MarbleType>& board){
+    int numberFilled = 0;
+    for(int i = 0; i< board.width(); i++){
+        for(int j = 0; j< board.width(); j++){
+            MarbleType marble = board.get(i,j);
+            if (marble == MARBLE_OCCUPIED){
+                numberFilled += 1;
+            }
+        }
+    }
+    return numberFilled;
+}
 bool solvePuzzle(Grid<MarbleType>& board, Set<uint32_t>& exploredBoards,
                  Vector<Move>& moveHistory){
-    // use this to prune dupicate branches of search
-    uint32_t encoding = compressMarbleBoard(board);
-
-    // TODO: complete this function!
-    cout << "Oops! Computer solver not implemented yet!" << endl;
+    
+    cout << "Number occupied: " << numOccupied(board) <<endl;
+    //memoization
+    uint32_t encoding = compressMarbleBoard(board);    
+    if (exploredBoards.contains(encoding)){
+        cout << "already checked" << endl;
+        return false;
+    }
+    
+    //if there is one marble left, you win
+    if (numOccupied(board) == 1){
+        cout << "returning win" <<endl;
+        return true;
+    } 
+    
+    //if we can't move, rule out this state (recursive backtracking)    
+    Vector<Move> possibleMoves = findPossibleMoves(board);
+    if (possibleMoves.isEmpty()) {
+        cout << "no possible moves" << endl;
+        return false;
+    }
+    exploredBoards.add(encoding);
+    
+    for (Move thisMove : possibleMoves){
+        makeMove(thisMove, board);
+        moveHistory.add(thisMove);
+        cout << "checking this move: "<< thisMove <<endl;
+        bool didWin = solvePuzzle(board, exploredBoards, moveHistory);
+        if (didWin) {
+            cout << "returning true" <<endl;
+            moveHistory.add(thisMove);
+            return true;
+        }
+        else{
+            cout <<  "undoing move" <<endl;
+            undoMove(thisMove, board);
+            moveHistory.remove(moveHistory.size() - 1);
+        }
+    }
     return false;
 }
 

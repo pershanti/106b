@@ -25,3 +25,5 @@ bool operator<(const Move m1, const Move m2){
     if (m1.endCol > m2.endCol) return false;
     return false;
 }
+
+
