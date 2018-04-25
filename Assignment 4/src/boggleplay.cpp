@@ -14,14 +14,29 @@
 #include "hashmap.h"
 #include "vector.h"
 #include "set.h"
+#include "bogglegui.h"
 
 void playOneGame(Lexicon& dictionary) {
-
-        Boggle newBoggle = Boggle(dictionary, "");
+        
+        string boardChar;
+        cout << "Enter board size" <<endl;
+        
+        getline(cin,boardChar);
+        
+        string letters = "";
+        int boardSize = stringToInteger(boardChar);
+        
+        if (boardSize != 16 && boardSize != 25){
+            cout << "enter custom string"<<endl;
+            getline(cin,letters);
+        }
+        
+        Boggle newBoggle = Boggle(dictionary, letters);
+        newBoggle.boardSize = boardSize;
         
         while(true){
             string guess;
-            
+            BoggleGUI::clearHighlighting();
             cout << "Enter a word. Or, press Enter to end your turn." << endl;
             
             getline(cin,guess);
@@ -32,6 +47,7 @@ void playOneGame(Lexicon& dictionary) {
             }
             
             if (newBoggle.checkWord(guess)){
+                cout << "word is okay"<<endl;
                 if (newBoggle.humanWordSearch(guess)){
                     cout << "You found a new word! " << toUpperCase(guess) << endl;
                     cout << "..." << endl;
@@ -48,11 +64,10 @@ void playOneGame(Lexicon& dictionary) {
             }
         }
         
-        
+       cout << "broke while" <<endl;
        Set<string> restOfWords = newBoggle.computerWordSearch();
-       for (string word : restOfWords){
-           cout << word << endl;
-       }
+       cout<<"Computer Results:"<<endl;
+       cout << restOfWords.toString() << endl;
        return;
     
 }

@@ -17,12 +17,15 @@
 #include "map.h"
 #include "hashmap.h"
 #include "vector.h"
+#include "hashset.h"
+#include "bogglegui.h"
 
 using namespace std;
 
 class Boggle {
 public:
     Boggle(Lexicon& dictionary, string boardText = "");
+    int boardSize = 16;
     char getLetter(int row, int col);
     bool checkWord(string word);
     bool humanWordSearch(string word);
@@ -30,8 +33,9 @@ public:
     int getScoreHuman();
     int getScoreComputer();
     string getPlayerWords();
-    bool searchFunction(string word, int row, int column, HashMap<Vector<int>,bool>  checkedLetters);
-    Set<string> findAllWords(string current, int row, int column);
+    bool searchFunction(string word, int row, int column, HashMap<int, HashSet<int>>  usedLetters);
+    Set<string> findAllWords(string current, int row, int column, HashMap<int, HashSet<int> > usedLetters, Set<string> allWords);
+    Vector<Vector<int>> findNeighborCubes(int row, int col);
 
     // TODO: add any other member functions/variables necessary
     friend ostream& operator<<(ostream& out, Boggle& boggle);
